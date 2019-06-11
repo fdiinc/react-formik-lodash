@@ -1,0 +1,31 @@
+{
+  "meta" : {
+    "view" : {
+      "id" : "bi63-dtpu",
+      "name" : "NCHS - Leading Causes of Death: United States",
+      "category" : "NCHS",
+      "createdAt" : 1449080633,
+      "viewType" : "tabular",
+      "columns" : [ {
+        "id" : -1,
+        "name" : "sid",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":sid",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "id",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":id",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }
+		  ]
+    }
+  }
+}

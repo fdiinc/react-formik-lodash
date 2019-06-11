@@ -2,6 +2,13 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import './App.css';
 import NestedData from './NestedData.jsx';
+import ReactDOM from 'react-dom';
+import ReactJson from 'react-json-view';
+import { TextField,Checkbox } from 'formik-material-ui';
+
+import {
+    Formik, Form, Field, ErrorMessage, FieldArray, getIn
+} from 'formik';
 
 
 
@@ -10,8 +17,30 @@ function Index() {
 }
 
 
+export const NestedExample = () => (
+  <div>
+    <h1>Social Profiles</h1>
+    <Formik
+      initialValues={{
+        social: {
+          facebook: '',
+          twitter: '',
+        },
+      }}
+      onSubmit={values => {
+        // same shape as initial values
+        console.log(values);
+      }}
+    ><Form>
+      <Field name="social.facebook" />
+      <Field name="social.twitter" />
+    <button type="submit">Submit</button>
+    </Form>
+    </Formik>
+  </div>
+);
 
-function App() {
+function App(props) {
   return (
     <Router>
       <div>
