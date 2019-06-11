@@ -1,59 +1,52 @@
 /* eslint-env browser */
 
-import React from 'react';
+import React, { useContext } from 'react';
 import Button from '@material-ui/core/Button';
-import produce from "immer";
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
-import ReactDOM from 'react-dom';
+import Paper from '@material-ui/core/Paper';
 import ReactJson from 'react-json-view';
-import { TextField,Checkbox } from 'formik-material-ui';
+import { TextField } from 'formik-material-ui';
 
 import {
-    Formik, Form, Field, ErrorMessage, FieldArray, getIn
+    Formik, Form, Field, getIn
 } from 'formik';
 
+import merge from 'deepmerge';
 
-import _ from 'lodash';
-import  FlattenJS from 'flattenjs';
+import { FormikConsumer } from 'formik';
 
-
-import data from './data.json';
-
+function useFormik() {
+  return useContext(FormikConsumer._context);
+}
 
 
 let testData = {
-  "meta" : {
-    "view" : {
-      "id" : "bi63-dtpu",
-      "name" : "NCHS - Leading Causes of Death: United States",
-      "category" : "NCHS",
-      "createdAt" : 1449080633,
-      "viewType" : "tabular",
-      "columns" : [ {
-        "id" : -1,
-        "name" : "sid",
-        "dataTypeName" : "meta_data",
-        "fieldName" : ":sid",
-        "position" : 0,
-        "renderTypeName" : "meta_data",
-        "format" : { },
-        "flags" : [ "hidden" ]
-      }, {
-        "id" : -1,
-        "name" : "id",
-        "dataTypeName" : "meta_data",
-        "fieldName" : ":id",
-        "position" : 0,
-        "renderTypeName" : "meta_data",
-        "format" : { },
-        "flags" : [ "hidden" ]
-      }
-		  ]
+    "meta" : {
+        "view" : {
+            "id" : "bi63-dtpu",
+            "name" : "NCHS - Leading Causes of Death: United States",
+            "category" : "NCHS",
+            "columns" : [
+                {
+                    "id" : -1,
+                    "name" : "sid",
+                    "fieldName" : ":sid",
+                    "flags" : [ "hidden" ]
+                }, {
+                    "id" : -1,
+                    "name" : "id",
+                    "dataTypeName" : "meta_data",
+                    "fieldName" : ":id",
+                    "position" : 0,
+                    "renderTypeName" : "meta_data",
+                    "format" : { },
+                    "flags" : [ "hidden" ]
+                }
+	    ]
+        }
     }
-  }
 };
 
-const merge = require('deepmerge');
+
 // Data from:
 // https://catalog.data.gov/dataset/age-adjusted-death-rates-for-the-top-10-leading-causes-of-death-united-states-2013
 
@@ -62,12 +55,22 @@ function Item({name, index, item}) {
     const basePath = [name, index,'name'];
     const path = basePath.join('.');
 
-    return <div>{path}:  <Field name={path} component={TextField}/></div>;
+    return <div>{path}:  <Field key={path} name={path} component={TextField}/></div>;
 }
 
-let overwriteMerge = (destinationArray, sourceArray, options) => sourceArray;
- 
-let options = { arrayMerge: overwriteMerge };
+function Items({name}) {
+    console.log('Items');
+    const {values} = useFormik();
+    console.log(values);
+    
+    let items = getIn(values, name);
+    return items.map((item, index) => <Item name={name} item={item} index={index}/>);
+
+}
+
+
+
+//let overwriteMerge = (destinationArray, sourceArray, options) => sourceArray;
 
 
 //let newData = merge({}, data, options);
@@ -79,67 +82,64 @@ class NestedData extends React.Component {
         data: testData
     };
 
-
-      overwriteMerge = (destinationArray, sourceArray, options) => sourceArray;
- 
+    /* configure deepmerge to overwrite source Arrays with the Destination Arrays */
+    overwriteMerge = (destinationArray, sourceArray, options) => sourceArray;
+    
     updateState = (values, funcs) => {
-        console.log('Input values');
-        console.log(values);
-    let options = { arrayMerge: this.overwriteMerge };
-    let newData = produce(this.state.data, draft => 
-                       {
-                         draft = merge(draft,values, options);
-                         return draft;
-                       }
-                      );
-      
+        let options = { arrayMerge: this.overwriteMerge };
+        
+        let newData = merge(this.state.data, values, options);
         this.setState({ data:newData}, () => {
-        console.log('UpdateState');
-                console.log(newData);
-        console.log(this.state.data);
-        funcs.setSubmitting(false);
-    });
-   }
-
+            console.log('UpdateState');
+            console.log(newData);
+            console.log(this.state.data);
+            funcs.setSubmitting(false);
+        });
+    }
 
     render = () => {
-    
-    var columnPath = 'meta.view.columns';
-    var columns = getIn(testData, columnPath);
-    console.log(columns);
-    var fieldNum = 0;
-    console.log('ReRender');
-        return (
-            <Formik initialValues={this.state.data}
-                    onSubmit={(values, funcs) => {
-                    // same shape as initial values
-                    console.log('xyzzy');
-                        console.log(values);
-                        console.log(funcs);
-                        this.updateState(values, funcs);
+        
+        var columnPath = 'meta.view.columns';
 
-      }}
-              
-      >
-        <Form >          <Field name='meta.view.id' component={TextField} fullWidth={true}/>
-          <Field name='meta.view.name' key={fieldNum++} component={TextField} fullWidth={true}/>
-          <Field name='meta.view.category'  key={fieldNum++} component={TextField} fullWidth={true}/>
-          <Field name='meta.view.licenseId'  key={fieldNum++}  component={TextField} fullWidth={true}/>
-          <div>
-            {
-                columns.map((item, index) => <Item name={columnPath} item={item} index={index}/>)
-          }
-          </div>
-          <Field name='meta.view.licenseId'  key={fieldNum++} component={TextField} fullWidth={true}/>
-          <hr/>
-          <Button type="submit">Submit</Button>
-          <ReactJson src={this.state.data} name={false}/>
-        </Form>
-      </Formik>);
+        var fieldNum = 0;
+ 
+        return (
+            <Paper>
+              <Formik initialValues={this.state.data}
+                      onSubmit={(values, funcs) => {
+                          this.updateState(values, funcs);
+
+                      }}
+                
+              >
+                <table>
+                  <tbody>
+                  <tr>
+                    <td>
+                      <Form >
+                        ID: <Field name='meta.view.id' component={TextField} fullWidth={true}/>
+                        Name: <Field name='meta.view.name' key={fieldNum++} component={TextField} fullWidth={true}/>
+                        Category: <Field name='meta.view.category'  key={fieldNum++} component={TextField} fullWidth={true}/>
+                        Licence ID: <Field name='meta.view.licenseId'  key={fieldNum++}  component={TextField} fullWidth={true}/>
+                        New Field:  <Field name='meta.view.newField'  key={fieldNum++}  component={TextField} fullWidth={true}/>
+                        <div>
+                          <Items key={fieldNum++} name={columnPath} />
+                        </div>
+                        <hr/>
+                        <Button variant="contained"  color="primary" type="submit">Update</Button>
+                        <hr/>
+                        <ReactJson src={this.state.data} name={false}/>
+                      </Form>
+                    </td>
+            </tr>
+            </tbody>
+                </table>
+              </Formik>
+            </Paper>);
     };
 
 };
 
 
-                  
+
 export default NestedData;
