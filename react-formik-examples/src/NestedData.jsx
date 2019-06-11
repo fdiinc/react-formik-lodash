@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Button from '@material-ui/core/Button';
+import produce from "immer";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import ReactDOM from 'react-dom';
 import ReactJson from 'react-json-view';
@@ -75,12 +76,31 @@ let options = { arrayMerge: overwriteMerge };
 class NestedData extends React.Component {
 
     state = {
-        data : testData
-    }
-
-    updateState = (values) => {
-
+        data: testData
     };
+
+
+      overwriteMerge = (destinationArray, sourceArray, options) => sourceArray;
+ 
+    updateState = (values, funcs) => {
+        console.log('Input values');
+        console.log(values);
+    let options = { arrayMerge: this.overwriteMerge };
+    let newData = produce(this.state.data, draft => 
+                       {
+                         draft = merge(draft,values, options);
+                         return draft;
+                       }
+                      );
+      
+        this.setState({ data:newData}, () => {
+        console.log('UpdateState');
+                console.log(newData);
+        console.log(this.state.data);
+        funcs.setSubmitting(false);
+    });
+   }
+
 
     render = () => {
     
@@ -91,9 +111,13 @@ class NestedData extends React.Component {
     console.log('ReRender');
         return (
             <Formik initialValues={this.state.data}
-                onSubmit={values => {
+                    onSubmit={(values, funcs) => {
                     // same shape as initial values
-        console.log(values);
+                    console.log('xyzzy');
+                        console.log(values);
+                        console.log(funcs);
+                        this.updateState(values, funcs);
+
       }}
               
       >
