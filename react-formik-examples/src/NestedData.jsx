@@ -14,8 +14,9 @@ import merge from 'deepmerge';
 
 import { FormikConsumer } from 'formik';
 
+// From: https://github.com/jaredpalmer/formik/issues/1144
 function useFormik() {
-  return useContext(FormikConsumer._context);
+    return useContext(FormikConsumer._context);
 }
 
 
@@ -23,7 +24,7 @@ let testData = {
     "meta" : {
         "view" : {
             "id" : "bi63-dtpu",
-            "name" : "NCHS - Leading Causes of Death: United States",
+            "name" : "NCHS Example Data United States",
             "category" : "NCHS",
             "columns" : [
                 {
